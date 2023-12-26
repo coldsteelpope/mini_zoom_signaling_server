@@ -51,7 +51,22 @@ io.on("connection", (socket) => {
         const remainUsers = rooms[data.room_num].users.filter((user) => 
             user.socket_id != socket.id
         );
-        io.to(socket.id).emit("remain_users", remainUsers);
+        io.to(socket.id).emit("remain_users", {remainUsers: remainUsers});
+    });
+
+    socket.on('send_offer', (data, callback) => {
+        const target_socket_id = data.receiveSocketId;
+        io.to(target_socket_id).emit("receive_offer", data);
+    });
+
+    socket.on('send_answer', (data, callback) => {
+        const target_socket_id = data.receiveSocketId;
+        io.to(target_socket_id).emit("receive_answer", data);
+    });
+
+    socket.on("candidate", (data, callback) => {
+        const target_socket_id = data.receiveSocketID;
+        io.to(target_socket_id).emit("receive_candidate", data);
     });
 
     // socket fires disconnect event
@@ -75,8 +90,10 @@ io.on("connection", (socket) => {
                 socket.broadcast.emit("user_exit", { socket_id: socket.id });
             }
         }
-
     });
+
+
+
 });
 
 const PORT = 5000 || process.env.PORT;
