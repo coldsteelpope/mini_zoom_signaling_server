@@ -19,9 +19,8 @@ let rooms = {};
 let socketToRoom = {};
 
 io.on("connection", (socket) => {
-
-    socket.on("create_room", (data, callback) => {
-
+    socket.on("get_rooms", (data, callback) => {
+        io.to(socket.id).emit('get_rooms', { rooms: rooms });
     });
 
     socket.on("enter_room", (data, callback) => {
@@ -47,6 +46,8 @@ io.on("connection", (socket) => {
         socketToRoom[socket.id] = data.room_num;
 
         socket.join(data.roomNum);
+        socket.broadcast.emit("get_rooms", { rooms: rooms });
+
 
         const remainUsers = rooms[data.room_num].users.filter((user) => 
             user.socket_id != socket.id
@@ -82,12 +83,15 @@ io.on("connection", (socket) => {
             if(new_room_users.length == 0)
             {
                 delete rooms[room_num];
+                socket.broadcast.emit("get_rooms", { rooms: rooms });
+
                 return;
             }
             else
             {
                 rooms[room_num].users = new_room_users;
                 socket.broadcast.emit("user_exit", { socket_id: socket.id });
+                socket.broadcast.emit("get_rooms", { rooms: rooms });
             }
         }
     });
