@@ -37,7 +37,7 @@ io.on("connection", (socket) => {
         // room is full
         if(rooms[data.room_num].users.length == MAXIMUM_USERS_NUM)
         {
-            socket.to(socket.id).emit("room_full");
+            io.to(socket.id).emit("room_full");
             return;
         }
         
